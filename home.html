@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masjid Accounting System</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f9;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(90deg, #28a745, #218838);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      position: relative;
+    }
+    header h1 {
+      margin: 10px 0 0;
+      font-size: 22px;
+    }
+    header i {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .container {
+      padding: 15px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    th {
+      background: #28a745;
+      color: white;
+    }
+
+    /* Column widths */
+    #recordTable th:nth-child(1),
+    #recordTable td:nth-child(1),
+    #incomeTable th:nth-child(1),
+    #incomeTable td:nth-child(1) {
+      width: 20%;
+    }
+    #recordTable th:nth-child(2),
+    #recordTable td:nth-child(2),
+    #incomeTable th:nth-child(2),
+    #incomeTable td:nth-child(2) {
+      width: 45%;
+    }
+    #recordTable th:nth-child(3),
+    #recordTable td:nth-child(3),
+    #incomeTable th:nth-child(3),
+    #incomeTable td:nth-child(3) {
+      width: 20%;
+    }
+    #recordTable th:nth-child(4),
+    #recordTable td:nth-child(4),
+    #incomeTable th:nth-child(4),
+    #incomeTable td:nth-child(4) {
+      width: 15%;
+    }
+
+    /* Inputs */
+    input[type="number"], input[type="date"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* Textarea for wrapping */
+    textarea {
+      width: 100%;
+      min-height: 40px;
+      resize: vertical;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    input[type="month"] {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 6px 10px;
+      margin: 5px 3px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .add-btn { background: #007bff; color: white; }
+    .save-btn { background: #28a745; color: white; }
+    .delete-btn { background: #dc3545; color: white; font-size: 16px; }
+    .pdf-btn { background: #6f42c1; color: white; }
+    .total-box, .month-box {
+      margin-top: 15px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .total-box h3 {
+      margin: 8px 0;
+      color: #333;
+    }
+    .contact-box {
+      background: #f0f0f0;
+      padding: 15px;
+      text-align: center;
+      margin-top: 30px;
+      border-top: 1px solid #ddd;
+    }
+    .contact-box i {
+      margin-right: 6px;
+    }
+    footer {
+      text-align: center;
+      padding: 15px;
+      margin-top: 20px;
+      background: #e9ecef;
+      font-size: 14px;
+      color: #555;
+      border-top: 1px solid #ccc;
+    }
+    footer i {
+      color: #28a745;
+      margin-right: 6px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 600px) {
+      header h1 { font-size: 18px; }
+      button { width: 100%; }
+      th, td { font-size: 12px; padding: 6px; }
+      textarea { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <i class="fas fa-mosque"></i>
+    <h1>Jamia Sadeya Accounting System <br> (Qazi Colony JBD)</h1>
+  </header>
+
+  <div class="container">
+    <!-- Month Selection -->
+    <div class="month-box">
+      <label for="monthSelect"><b>Select Month:</b></label>
+      <input type="month" id="monthSelect" onchange="loadMonth()">
+      <button onclick="newMonth()">📅 Start New Month</button>
+    </div>
+
+    <!-- Income Table -->
+    <h3>Income Records</h3>
+    <table id="incomeTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Income Source</th>
+          <th>Amount (PKR)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="incomeBody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addIncome()">➕ Add Income</button>
+
+    <!-- Records Table -->
+    <h3>Expense Records</h3>
+    <table id="recordTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Expense Item</th>
+          <th>Amount (PKR)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="recordBody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addRow()">➕ Add Expense</button>
+
+    <!-- Buttons -->
+    <button class="save-btn" onclick="saveData()">💾 Save</button>
+    <button class="pdf-btn" onclick="downloadPDF()">⬇️ Download PDF</button>
+
+    <!-- Totals -->
+    <div class="total-box">
+      <h3>💰 Total Income: PKR <span id="showIncome">0</span></h3>
+      <h3>📉 Total Expenses: PKR <span id="totalExpense">0</span></h3>
+      <h3>📊 Remaining Balance: PKR <span id="remainingBalance">0</span></h3>
+    </div>
+  </div>
+
+  <!-- Contact Section -->
+
+
+  <footer>
+    © <span id="year"></span> 
+    <span style="color:#0073e6; font-weight:600;">Developed by Kashif Raja</span> | 
+    <a href="https://your-portfolio-link.com" target="_blank" style="color:#0073e6; text-decoration:none;">
+      Freelance Web Developer
+    </a>
+  </footer>
+
+  <!-- JS: main app logic -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    let currentMonth = new Date().toISOString().slice(0, 7);
+    document.getElementById("monthSelect").value = currentMonth;
+
+    let allRecords = JSON.parse(localStorage.getItem("masjidRecords")) || {};
+    let incomeRecords = allRecords[currentMonth]?.incomeRecords || [];
+    let expenseRecords = allRecords[currentMonth]?.expenseRecords || [];
+
+    function renderTables() {
+      // Income Table
+      const incomeBody = document.getElementById("incomeBody");
+      incomeBody.innerHTML = "";
+      let totalIncome = 0;
+
+      incomeRecords.forEach((record, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="date" value="${record.date}" onchange="updateIncomeDate(${index}, this.value)"></td>
+          <td><textarea onchange="updateIncomeName(${index}, this.value)">${record.name}</textarea></td>
+          <td><input type="number" value="${record.amount}" onchange="updateIncomeAmount(${index}, this.value)"></td>
+          <td><button class="delete-btn" onclick="deleteIncome(${index})">❌</button></td>
+        `;
+        incomeBody.appendChild(row);
+        totalIncome += Number(record.amount);
+      });
+
+      // Expense Table
+      const expenseBody = document.getElementById("recordBody");
+      expenseBody.innerHTML = "";
+      let totalExpense = 0;
+
+      expenseRecords.forEach((record, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="date" value="${record.date}" onchange="updateExpenseDate(${index}, this.value)"></td>
+          <td><textarea onchange="updateExpenseName(${index}, this.value)">${record.name}</textarea></td>
+          <td><input type="number" value="${record.amount}" onchange="updateExpenseAmount(${index}, this.value)"></td>
+          <td><button class="delete-btn" onclick="deleteExpense(${index})">❌</button></td>
+        `;
+        expenseBody.appendChild(row);
+        totalExpense += Number(record.amount);
+      });
+
+      // Totals
+      let balance = totalIncome - totalExpense;
+      document.getElementById("showIncome").innerText = totalIncome;
+      document.getElementById("totalExpense").innerText = totalExpense;
+      document.getElementById("remainingBalance").innerText = balance;
+    }
+
+    // Income Functions
+    function addIncome() {
+      let today = new Date().toISOString().split("T")[0];
+      incomeRecords.push({ date: today, name: "New Income", amount: 0 });
+      renderTables();
+    }
+    function updateIncomeDate(i, v) { incomeRecords[i].date = v; }
+    function updateIncomeName(i, v) { incomeRecords[i].name = v; }
+    function updateIncomeAmount(i, v) { incomeRecords[i].amount = Number(v); renderTables(); }
+    function deleteIncome(i) { incomeRecords.splice(i, 1); renderTables(); }
+
+    // Expense Functions
+    function addRow() {
+      let today = new Date().toISOString().split("T")[0];
+      expenseRecords.push({ date: today, name: "New Expense", amount: 0 });
+      renderTables();
+    }
+    function updateExpenseDate(i, v) { expenseRecords[i].date = v; }
+    function updateExpenseName(i, v) { expenseRecords[i].name = v; }
+    function updateExpenseAmount(i, v) { expenseRecords[i].amount = Number(v); renderTables(); }
+    function deleteExpense(i) { expenseRecords.splice(i, 1); renderTables(); }
+
+    // Save & Load
+    function saveData() {
+      allRecords[currentMonth] = { incomeRecords, expenseRecords };
+      localStorage.setItem("masjidRecords", JSON.stringify(allRecords));
+      alert("✅ Record Saved for " + currentMonth);
+    }
+    function loadMonth() {
+      currentMonth = document.getElementById("monthSelect").value;
+      if (allRecords[currentMonth]) {
+        incomeRecords = allRecords[currentMonth].incomeRecords || [];
+        expenseRecords = allRecords[currentMonth].expenseRecords || [];
+      } else { incomeRecords = []; expenseRecords = []; }
+      renderTables();
+    }
+    function newMonth() {
+      currentMonth = document.getElementById("monthSelect").value;
+      incomeRecords = []; expenseRecords = [];
+      renderTables();
+    }
+
+    // small helper to format numbers
+    function formatPKR(n){ return Number(n || 0).toLocaleString('en-PK'); }
+
+    // PDF Export (improved using AutoTable)
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 40;
+
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Jamia Sadeya Accounting Report", pageWidth / 2, 40, { align: "center" });
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text("Month: " + currentMonth, margin, 60);
+      doc.setLineWidth(0.5);
+      doc.line(margin, 68, pageWidth - margin, 68);
+
+      // Income Table
+      const incomeBody = incomeRecords.map(r => [
+        r.date || '-',
+        r.name || '-',
+        formatPKR(r.amount)
+      ]);
+
+      doc.autoTable({
+        startY: 80,
+        head: [['Date', 'Income Source', 'Amount (PKR)']],
+        body: incomeBody,
+        theme: 'grid',
+        styles: { font: 'helvetica', fontSize: 10, cellPadding: 6 },
+        headStyles: { fillColor: [40, 167, 69], textColor: 255 },
+        columnStyles: { 2: { halign: 'right' } }
+      });
+
+      // Expense Table (position after income table)
+      let expensesStart = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 20 : 200;
+      const expenseBody = expenseRecords.map(r => [
+        r.date || '-',
+        r.name || '-',
+        formatPKR(r.amount)
+      ]);
+
+      doc.autoTable({
+        startY: expensesStart,
+        head: [['Date', 'Expense Item', 'Amount (PKR)']],
+        body: expenseBody,
+        theme: 'grid',
+        styles: { font: 'helvetica', fontSize: 10, cellPadding: 6 },
+        headStyles: { fillColor: [220, 53, 69], textColor: 255 },
+        columnStyles: { 2: { halign: 'right' } }
+      });
+
+      // Summary (below tables)
+      let summaryY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 20 : expensesStart + 100;
+      const totalIncome = incomeRecords.reduce((s, r) => s + Number(r.amount || 0), 0);
+      const totalExpense = expenseRecords.reduce((s, r) => s + Number(r.amount || 0), 0);
+      const balance = totalIncome - totalExpense;
+
+      // draw a light box for summary
+      const boxX = margin;
+      const boxW = pageWidth - margin * 2;
+      const boxH = 70;
+      doc.setDrawColor(200);
+      doc.setFillColor(245);
+      doc.rect(boxX, summaryY - 6, boxW, boxH, 'F');
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Summary", boxX + 6, summaryY + 8);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text("Total Income: PKR " + formatPKR(totalIncome), boxX + 6, summaryY + 26);
+      doc.text("Total Expense: PKR " + formatPKR(totalExpense), boxX + 6, summaryY + 42);
+      doc.text("Remaining Balance: PKR " + formatPKR(balance), boxX + 6, summaryY + 58);
+
+      // Footer note
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text("Generated by Jamia Sadeya Accounting System", pageWidth / 2, doc.internal.pageSize.getHeight() - 30, { align: "center" });
+
+      doc.save("Masjid_Record_" + currentMonth + ".pdf");
+    }
+
+    renderTables();
+  </script>
+
+  <!-- jsPDF + AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</body>
+</html>
+
+
+
